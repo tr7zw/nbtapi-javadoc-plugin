@@ -17,4 +17,4 @@
 
 # nbtapi-javadoc-plugin
 
-Fork of [maven-javadoc-plugin](https://github.com/apache/maven-javadoc-plugin/) with built in package renaming support, because apparently no one else ever wanted to use the maven-shade-plugin with renamed packages and still have javadoc?!?
+Fork of [maven-javadoc-plugin](https://github.com/apache/maven-javadoc-plugin/) with built in package renaming support(currently hardcoded), because apparently no one else ever wanted to use the maven-shade-plugin with renamed packages and still have javadoc?!?
