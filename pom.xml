@@ -29,14 +29,15 @@ under the License.
     <relativePath />
   </parent>
 
-  <artifactId>maven-javadoc-plugin</artifactId>
+  <artifactId>nbtapi-javadoc-plugin</artifactId>
   <version>3.4.2-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
 
-  <name>Apache Maven Javadoc Plugin</name>
+  <name>Modified Apache Maven Javadoc Plugin</name>
   <description>
     The Apache Maven Javadoc Plugin is a plugin that uses the javadoc tool for
     generating javadocs for the specified project.
+    Modified to be able to relocate nbtapi source files during the javadoc generation.
   </description>
   <inceptionYear>2004</inceptionYear>
 

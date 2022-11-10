@@ -35,6 +35,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -162,6 +163,11 @@ import static org.apache.maven.plugins.javadoc.JavadocUtil.toRelative;
 public abstract class AbstractJavadocMojo
     extends AbstractMojo
 {
+    // Hacky additional values
+
+    @Parameter( defaultValue = "${project.build.directory}/javadoc-relocate" )
+    private File relocateTmpDir;
+
     /**
      * Classifier used in the name of the javadoc-options XML file, and in the resources bundle
      * artifact that gets attached to the project. This one is used for non-test javadocs.
@@ -2178,12 +2184,43 @@ public abstract class AbstractJavadocMojo
                 List<String> files = new ArrayList<>( JavadocUtil.getFilesFromSource( sourceDirectory,
                         sourceFileIncludes, sourceFileExcludes,
                         excludedPackages ) );
-
+                List<String> reworkedFiles = new ArrayList<>();
+                try 
+                {
+                    for ( String file : new ArrayList<String>( files ) ) 
+                    {
+                        if ( file.toLowerCase().endsWith( ".java" )
+                         && file.toLowerCase().contains( "de/tr7zw/changeme/nbtapi" ) ) 
+                        {
+                            String data = new String( Files.readAllBytes( sourcePath.resolve( file ) ) );
+                            data = data.replace( "de.tr7zw.changeme.nbtapi", "de.tr7zw.nbtapi" );
+                            String nFile = file.replace( "de/tr7zw/changeme/nbtapi", "de/tr7zw/nbtapi" );
+                            File out = new File( relocateTmpDir, nFile );
+                            out.getParentFile().mkdirs();
+                            Files.write( new File( relocateTmpDir, nFile ).toPath(), data.getBytes() ,
+                            StandardOpenOption.CREATE );
+                            reworkedFiles.add( nFile );
+                            files.remove( file );
+                            getLog().info( "Relocated " + sourcePath.resolve( file ) + " to " + out.getAbsolutePath() );
+                        }
+                    }
+                } 
+                catch ( IOException e ) 
+                {
+                    throw new MavenReportException( "Exception during relocation!", e );
+                }
+                if ( !reworkedFiles.isEmpty() )
+                {
+                    mappedFiles.put( relocateTmpDir.toPath(), reworkedFiles );
+                }
                 if ( autoExclude && files.remove( "module-info.java" ) )
                 {
                     getLog().debug( "Auto exclude module-info.java due to source value" );
                 }
-                mappedFiles.put( sourcePath, files );
+                if ( !files.isEmpty() )
+                {
+                    mappedFiles.put( sourcePath, files );
+                }
             }
         }
 
